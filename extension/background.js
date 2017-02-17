@@ -42,24 +42,11 @@ console.log("Background page activated on " + new Date());
 _testNativeComponent().then(function (result) {
   if (result == "missing") {
     // open landing page if no native components installed
-    chrome.tabs.create({ 'url': NO_NATIVE_URL }); // TODO: i18n in URL
+    chrome.tabs.create({ 'url': NO_NATIVE_URL + '?lang=' + chrome.i18n.getUILanguage()});
   } else if (result == "ok") {
     // probe was OK, not needed later.
     missing = false;
   }
-});
-
-
-// XXX: probe test, because connectNative() does not allow to check the presence
-// of native component for some reason
-// FF 52 adds this event
-typeof chrome.runtime.onStartup !== 'undefined' && chrome.runtime.onStartup.addListener(function () {
-  // Also probed for in onInstalled()
-  _testNativeComponent().then(function (result) {
-    if (result === "ok") {
-      missing = false;
-    }
-  });
 });
 
 // Force kill of native process
