@@ -1,7 +1,7 @@
 {
     "name": "__MSG_extName__",
     "version": "17.2.17",
-    "version_name": "__MSG_extVersionName__",
+    "version_name": "February 2017",
     "manifest_version": 2,
     "description": "__MSG_extDescription__",
     "default_locale": "en",
