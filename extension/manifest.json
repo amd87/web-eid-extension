@@ -4,6 +4,7 @@
     "versionName": "__MSG_extVersionName__",
     "manifest_version": 2,
     "description": "__MSG_extDescription__",
+    "default_locale": "en",
     "icons": {
         "48": "icon48.png",
         "128": "icon128.png"
