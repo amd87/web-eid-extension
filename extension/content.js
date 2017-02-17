@@ -42,7 +42,7 @@ window.addEventListener("message", function(event) {
 
 // post messages from extension to page
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    window.postMessage(request, '*');
+    window.postMessage(request, location.origin);
 });
 
 // inject content of page.js to the DOM of every page
