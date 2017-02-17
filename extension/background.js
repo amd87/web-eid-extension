@@ -132,8 +132,6 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
         url = HELLO_URL;
       } else if (result === "forbidden") {
         url = DEVELOPER_URL;
-      } else if (result === "missing") {
-        url = NO_NATIVE_URL;
       }
       if (url) {
         chrome.tabs.create({ 'url': url + "?" + details.reason });
