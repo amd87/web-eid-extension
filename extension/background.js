@@ -36,7 +36,7 @@ var ports = {};
 // false, if native components are verified to be usable
 var missing = true;
 
-console.log("Background page activated");
+console.log("Background page activated on " + new Date());
 
 // Test for presence of native components.
 _testNativeComponent().then(function (result) {
@@ -74,7 +74,7 @@ function _killPort(tab) {
 
 // Promise wrapper for sendNativeMessage
 function sendNativeMessage(host, msg) {
-  if (browser.runtime.sendNativeMessage !== 'undefined') {
+  if (typeof browser !==  'undefined') {
     // This is FF
     return browser.runtime.sendNativeMessage(host, msg);
   } else {
@@ -83,7 +83,7 @@ function sendNativeMessage(host, msg) {
       chrome.runtime.sendNativeMessage(host, msg, function (response) {
         if (!response) {
           // error occured
-          console.log("Messgae sending failed: " + JSON.stringify(chrome.runtime.lastError));
+          console.log("sendNativeMessage failed: " + JSON.stringify(chrome.runtime.lastError));
           reject(chrome.runtime.lastError);
         } else {
           resolve(response);
@@ -124,6 +124,7 @@ function _testNativeComponent() {
 // When extension is installed, check for native component or direct to helping page
 // Firefox adds this event v52
 typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.addListener(function (details) {
+  console.log("onInstalled: " + JSON.stringify(details));
   if (details.reason === "install" || details.reason === "update") {
     _testNativeComponent().then(function (result) {
       var url = null;
