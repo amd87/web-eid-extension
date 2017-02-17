@@ -4,6 +4,8 @@
   "homepage": "https://hwcrypto.org/",
   "license": "LGPL-2.1",
   "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-exec": "^1.0.1",
     "web-ext": "^1.8.1"
   }
 }
