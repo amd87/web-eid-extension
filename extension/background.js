@@ -103,12 +103,12 @@ function _testNativeComponent() {
     }).catch(function (reason) {
       console.log("Connect failed: " + JSON.stringify(reason));
       // Try to be smart and do some string matching on Chrome
-      if (chrome.runtime.lastError) {
+      if (reason) {
         const permissions = "Access to the specified native messaging host is forbidden.";
         const missing = "Specified native messaging host not found.";
-        if (chrome.runtime.lastError.message === permissions) {
+        if (reason.message === permissions) {
           resolve("forbidden");
-        } else if (chrome.runtime.lastError.message === missing) {
+        } else if (reason.message === missing) {
           resolve("missing");
         } else {
           resolve("missing");
