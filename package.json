@@ -1,0 +1,9 @@
+{
+  "name": "hwcrypto-extension",
+  "repository": "https://github.com/hwcrypto/hwcrypto-extension.git",
+  "homepage": "https://hwcrypto.org/",
+  "license": "LGPL-2.1",
+  "devDependencies": {
+    "web-ext": "^1.8.1"
+  }
+}
