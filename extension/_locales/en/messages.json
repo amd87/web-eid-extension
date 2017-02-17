@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Web eID",
+    "description": "Extension name."
+  },
+  "extDescription": {
+    "message": "Use your eID smart card on the Web",
+    "description": "Extension description" 
+  },
+  "extVersionName": {
+    "message": "February 2017",
+    "description": "Extension human-readable version"
+  }
+}

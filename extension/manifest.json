@@ -1,9 +1,10 @@
 {
-    "name": "Token signing",
+    "name": "__MSG_extName__",
     "version": "0.0.23",
+    "versionName": "__MSG_extVersionName__",
     "minimum_chrome_version": "40.0",
     "manifest_version": 2,
-    "description": "Use your eID smart card on the web",
+    "description": "__MSG_extDescription__",
     "icons": {
         "48": "icon48.png",
         "128": "icon128.png"

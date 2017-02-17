@@ -5,4 +5,4 @@ release:
 	test ! -f extension-$(RELEASE).zip
 	test -z "`git status -s extension`"
 	git clean -dfx extension
-	zip -r -j extension-$(RELEASE).zip extension
+	(cd extension && zip -r ../extension-$(RELEASE).zip .)
