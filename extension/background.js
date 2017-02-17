@@ -16,11 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-var NO_NATIVE_URL = "https://open-eid.github.io/chrome-token-signing/missing.html";
-var HELLO_URL = "https://open-eid.github.io/chrome-token-signing/hello.html";
-var DEVELOPER_URL = "https://github.com/open-eid/chrome-token-signing/wiki/DeveloperTips";
+var NO_NATIVE_URL = "https://hwcrypto.org/missing.html";
+var HELLO_URL = "https://hwcrypto.org/hello.html";
+var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-native/wiki/DeveloperTips";
 
-var NATIVE_HOST = "ee.ria.esteid";
+var NATIVE_HOST = "org.hwcrypto.native";
 
 var K_SRC = "src";
 var K_ORIGIN = "origin";
