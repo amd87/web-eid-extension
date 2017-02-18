@@ -13,6 +13,6 @@
 
 This is _the_ reference implementation of a **modern desktop browser extension** that utilizes native messaging (available in [Chrome](https://developer.chrome.com/extensions/nativeMessaging), [Firefox](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging), [Opera](https://dev.opera.com/extensions/message-passing/#native-messaging) and soon [Edge](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/native-messaging)) to talk to on-host native components for interacting with eID hardware (e.g. smart cards or USB tokens).
 
-It allows to use pre-provisioned X509 PKI certificates for signing and authentication on websites, filling the gap left by browser API-s like [WebCryptoAPI](https://www.w3.org/TR/WebCryptoAPI/) and [WebAuthentication](https://www.w3.org/TR/webauthn/) in the process of phasing out legacy technologies such as Java applets and NPAPI plugins.
+[This architecture](https://hwcrypto.github.io/#architecture-overview) allows to use pre-provisioned X509 PKI certificates for signing and authentication on websites, filling the gap left by browser API-s like [WebCryptoAPI](https://www.w3.org/TR/WebCryptoAPI/) and [WebAuthentication](https://www.w3.org/TR/webauthn/) in the process of phasing out legacy technologies such as Java applets and NPAPI plugins.
 
 For now, please refer to the [wiki](https://github.com/hwcrypto/hwcrypto-extension/wiki) for developer information.
