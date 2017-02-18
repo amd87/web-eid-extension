@@ -5,7 +5,7 @@
 [![addons.opera.com](https://github.com/alrra/browser-logos/blob/master/src/opera/opera_64x64.png)](https://addons.opera.com/en/extensions/)
 [![Windows store](https://github.com/alrra/browser-logos/blob/master/src/edge/edge_64x64.png)](https://www.microsoft.com/en-us/store/collections/EdgeExtensions/pc/)
 
-<sub>\*ETA February 2017. Edge support depends on a [future release by Microsoft](https://www.microsoft.com/en-us/windows/upcoming-features) ([details](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/native-messaging)). Safari works with a different technology.</sub>
+<sub>\*ETA February 2017. Edge support depends on a [future release by Microsoft](https://www.microsoft.com/en-us/windows/upcoming-features) ([details](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/native-messaging)). Safari works with a different technology. Legacy plugins for legacy browsers (IE) available elsewhere.</sub>
 
 ----
 
