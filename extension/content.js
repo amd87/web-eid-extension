@@ -18,29 +18,33 @@
 
 var inuse = false;
 
-// Forward the message from page.js to background.js
+// Forward the message from hwcrypto.js to background.js
 window.addEventListener("message", function(event) {
-    // We only accept messages from ourselves
+    // We only accept messages from ourselves (JS embedded in the page)
     if (event.source !== window)
         return;
 
-    // and forward to extension
-    if (event.data.src && (event.data.src === "page.js")) {
+    // Background page adds extension with version.
+    if (!event.data.extension) {
+        // add origin information and forward to extension
         event.data["origin"] = location.origin;
+        // FF returns a promise, filled with response (or null)
+        // TODO: use the possibility to process the response
         chrome.runtime.sendMessage(event.data, function(response) {});
 
         // Only add unload handler if extension has been used
         if (!inuse) {
             // close the native component if page unloads
             window.addEventListener("beforeunload", function(event) {
-                chrome.runtime.sendMessage({src: 'page.js', type: 'DONE'});
+                chrome.runtime.sendMessage({type: 'DONE'});
             }, false);
             inuse = true;
         }
     }
 }, false);
 
-// post messages from extension to page
+// post messages from extension (background.js) to page
+// TODO: remove
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    window.postMessage(request, location.origin);
+    window.postMessage(request, "*");
 });
