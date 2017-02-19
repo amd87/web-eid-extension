@@ -1,2 +1,3 @@
-default:
-	grunt
+default: build
+.DEFAULT:
+	grunt $@
