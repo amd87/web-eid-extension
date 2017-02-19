@@ -22,7 +22,6 @@ var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-native/wiki/DeveloperT
 
 var NATIVE_HOST = "org.hwcrypto.native";
 
-var K_SRC = "src";
 var K_ORIGIN = "origin";
 var K_NONCE = "nonce";
 var K_RESULT = "result";
@@ -167,7 +166,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 // Send the message back to the originating tab
 function _reply(tab, msg) {
-  msg[K_SRC] = "background.js";
   msg[K_EXTENSION] = chrome.runtime.getManifest().version;
   chrome.tabs.sendMessage(tab, msg);
 }
