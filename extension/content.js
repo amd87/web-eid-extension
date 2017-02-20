@@ -25,8 +25,8 @@ window.addEventListener("message", function(event) {
         return;
 
     // Background page adds extension with version.
-    if (!event.data.extension) {
-        // add origin information and forward to extension
+    if (!event.data.extension && event.data.hwcrypto) {
+        // add origin information and forward to background.js
         event.data["origin"] = location.origin;
         // FF returns a promise, filled with response (or null)
         // TODO: use the possibility to process the response
