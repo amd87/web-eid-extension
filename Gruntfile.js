@@ -7,20 +7,24 @@ module.exports = function(grunt) {
         exec: {
           isclean: {cmd: 'test -z "`git status -s extension`"'},
           cleanup: {cmd: 'git clean -dfx extension'},
+          distdir: {cmd: 'mkdir -p dist'},
           chrome: {
-            cwd: "chrome",
-            cmd: 'zip -r ../chrome-' + manifest.version + '.zip .'
+            cwd: "build/chrome",
+            cmd: 'zip -r ../../dist/chrome-' + manifest.version + '.zip .'
           },
           firefox: {
-            cwd: "firefox",
-            cmd: 'zip -r ../firefox-' + manifest.version + '.zip .'
+            cwd: "build/firefox",
+            cmd: 'zip -r ../../dist/firefox-unsigned-' + manifest.version + '.zip .'
           },
           firefoxstore: {
-            cwd: "firefoxstore",
-            cmd: 'zip -r ../firefoxstore-' + manifest.version + '.zip .'
+            cwd: "build/firefoxstore",
+            cmd: 'zip -r ../../dist/firefox-store-' + manifest.version + '.zip .'
+          },
+          test: {
+            cmd: './node_modules/.bin/addons-linter build/chrome && ./node_modules/.bin/addons-linter build/firefoxstore && ./node_modules/.bin/addons-linter --self-hosted build/firefox'
           },
           sign: {
-            cmd: "./node_modules/.bin/web-ext sign -a . -s firefox --api-key " + amo.issuer + " --api-secret " + amo.secret
+            cmd: "./node_modules/.bin/web-ext sign -a dist -s build/firefox --api-key " + amo.issuer + " --api-secret " + amo.secret
           }
         }
     });
@@ -28,28 +32,33 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-exec');
     grunt.registerTask('extensions', "Generate manifest files", function() {
        // delete existing
-       if (grunt.file.isDir('chrome'))
-         grunt.file.delete('chrome');
-       if (grunt.file.isDir('firefox'))
-         grunt.file.delete('firefox')
-       if (grunt.file.isDir('firefoxstore'))
-         grunt.file.delete('firefoxstore');
+       if (grunt.file.isDir('build'))
+         grunt.file.delete('build');
 
        // copy existing
-       grunt.file.copy('extension', 'chrome');
-       grunt.file.copy('extension', 'firefox');
-       grunt.file.copy('extension', 'firefoxstore');
+       grunt.file.copy('extension', 'build/chrome');
+       grunt.file.copy('extension', 'build/firefox');
+       grunt.file.copy('extension', 'build/firefoxstore');
        
+       // Small helper for fixing json
+       function replace(filename, things) {
+         var manifest = grunt.file.readJSON(filename);
+         things(manifest);
+         grunt.file.write(filename, JSON.stringify(manifest, null, 2));
+       }
        // modify chrome manifest, removing the mozilla bit
-       var chrome_manifest = grunt.file.readJSON('chrome/manifest.json');
-       if ("applications" in manifest)
-         delete manifest["applications"];
-       grunt.file.write("chrome/manifest.json", JSON.stringify(chrome_manifest, null, 2));
-
+       replace("build/chrome/manifest.json", function(f) {
+         if ("applications" in f)
+           delete f["applications"];
+       });
        // modify firefox store manifest, removing update_url
-       var ff_store_manifest = grunt.file.readJSON('firefoxstore/manifest.json');
-       delete ff_store_manifest.applications.gecko["update_url"];
-       grunt.file.write("firefoxstore/manifest.json", JSON.stringify(ff_store_manifest, null, 2));
+       replace("build/firefoxstore/manifest.json", function(f) {
+         delete f.applications.gecko["update_url"];
+       });
+       // modify firefox manifest, changing the store ID to "readable ID"
+       replace("build/firefox/manifest.json", function(f) {
+         f.applications.gecko["id"] = "native@hwcrypto.org";
+       });
     });
     grunt.registerTask('sign', "Sign the FF extension via the API", function() {
        var help = "\nSigning requires AMO signing API keys in " + keyfile;
@@ -59,12 +68,13 @@ module.exports = function(grunt) {
        if (!amo.issuer || !amo.secret) {
          grunt.fail.fatal(help);
        }
+       grunt.task.run('exec:isclean');
        grunt.task.run('build');
        grunt.task.run('exec:sign');
     });
     
     grunt.registerTask('build', ['extensions']);
     grunt.registerTask('clean', ['exec:isclean', 'exec:cleanup']);
-    grunt.registerTask('dist', ['exec:isclean', 'exec:chrome', 'exec:firefox', 'exec:firefoxstore']);
-    grunt.registerTask('default', ['clean', 'build', 'dist']);
+    grunt.registerTask('dist', ['exec:isclean', 'exec:distdir', 'exec:chrome', 'exec:firefox', 'exec:firefoxstore']);
+    grunt.registerTask('default', ['clean', 'build', 'exec:test', 'dist']);
 };
