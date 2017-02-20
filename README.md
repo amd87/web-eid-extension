@@ -4,6 +4,7 @@
 [![addons.mozilla.org](https://github.com/alrra/browser-logos/blob/master/src/firefox/firefox_64x64.png)](https://addons.mozilla.org/en-US/firefox/)
 [![addons.opera.com](https://github.com/alrra/browser-logos/blob/master/src/opera/opera_64x64.png)](https://addons.opera.com/en/extensions/)
 [![Windows store](https://github.com/alrra/browser-logos/blob/master/src/edge/edge_64x64.png)](https://www.microsoft.com/en-us/store/collections/EdgeExtensions/pc/)
+[![Chrome Web Store](https://github.com/alrra/browser-logos/blob/master/src/vivaldi/vivaldi_64x64.png)](https://help.vivaldi.com/article/extensions/)
 
 <sub>\*ETA February 2017. Edge support depends on a [future release by Microsoft](https://www.microsoft.com/en-us/windows/upcoming-features) ([more info](http://www.theverge.com/2017/1/2/14146182/microsoft-windows-10-creators-update-april-release-date)). Safari works with a different technology. Legacy plugins for legacy browsers (IE) available elsewhere.</sub>
 
