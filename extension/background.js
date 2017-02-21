@@ -17,8 +17,8 @@
  */
 
 var NO_NATIVE_URL = "https://hwcrypto.org/missing.html";
-var HELLO_URL = "https://hwcrypto.org/hello.html";
-var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-native/wiki/DeveloperTips";
+var HELLO_URL = "https://web-eid.com/";
+var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-extension/wiki/DeveloperTips";
 
 var NATIVE_HOST = "org.hwcrypto.native";
 
@@ -114,13 +114,17 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
   if (details.reason === "install" || details.reason === "update") {
     _testNativeComponent().then(function (result) {
       var url = null;
-      if (result === "ok" && details.reason === "install") {
-        url = HELLO_URL;
-      } else if (result === "forbidden") {
-        url = DEVELOPER_URL;
+      if (details.reason === "install") {
+        // If firefox
+        if (typeof browser !== 'undefined') {
+           url = HELLO_URL + "?installer=firefox-exension";
+        }
+      }
+      if (result === "forbidden") {
+        url = DEVELOPER_URL + "?reason=" + details.reason;
       }
       if (url) {
-        chrome.tabs.create({ 'url': url + "?" + details.reason });
+        chrome.tabs.create({ 'url': url });
       }
     });
   }
