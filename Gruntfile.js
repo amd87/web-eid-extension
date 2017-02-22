@@ -2,6 +2,7 @@ module.exports = function(grunt) {
     var manifest = grunt.file.readJSON('extension/manifest.json');
     var keyfile = process.env['HOME'] + '/.mozilla-amo-key.json';
     var amo = grunt.file.exists(keyfile) ? grunt.file.readJSON(keyfile) : {};
+    var chrome_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmxD3AS1nSLiUpWA76V+ZxLyWnaZ1XPXI/kx9UP98XMOhVQPOKoCErZnHxeiuYjq/9eqM4aFIdwC88IWlncpe8OxtHbmyn6omW2F49YX43DnjPYNsnEpK61inZW8KES2usCPj//qA7/EuseJG3bufGUv+8iuBRrNRKmiZYC9xtLYxbnocAyqp0B2+WIJWonDfE2devGs7gFCCOiaFpvyGPhcwuArHNQ7TMVVkNDtYc3QZ0MtfPIylw+e8ybanXQtn7K9B7tKY8VmQ6sZaezlLQggjSerV3t48ntsBS8rA3ikAzaDVm15zAy9cmOGGOkdwLvzLvv2NbUXOhUmzFPYpNwIDAQAB";
 
     grunt.initConfig({
         exec: {
@@ -58,6 +59,11 @@ module.exports = function(grunt) {
        // modify firefox manifest, changing the store ID to "readable ID"
        replace("build/firefox/manifest.json", function(f) {
          f.applications.gecko["id"] = "native@hwcrypto.org";
+       });
+       // make chrome development folder
+       grunt.file.copy("build/chrome", "build/chrome-dev");
+       replace("build/chrome-dev/manifest.json", function(f) {
+         f["key"] = chrome_key;
        });
     });
     grunt.registerTask('sign', "Sign the FF extension via the API", function() {
