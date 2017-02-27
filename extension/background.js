@@ -138,7 +138,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Not our extension, do nothing
     return;
   }
-  console.log("MSG: " + JSON.stringify(request));
+  console.log("MSG R: " + JSON.stringify(request));
   if (sender.tab) {
     // Check if page is DONE and close the native component without doing anything else
     if (request["type"] === "DONE") {
@@ -171,6 +171,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 // Send the message back to the originating tab
 function _reply(tab, msg) {
   msg[K_EXTENSION] = chrome.runtime.getManifest().version;
+  console.log("MSG S: " + JSON.stringify(msg));
   chrome.tabs.sendMessage(tab, msg);
 }
 
