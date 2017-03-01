@@ -84,7 +84,7 @@ function _testNativeComponent() {
   return new Promise(function (resolve, reject) {
     // FF has only host and message and returns a Promise
     sendNativeMessage(NATIVE_HOST, {}).then(function (response) {
-      console.log("Connect successful: " + response);
+      console.log("Connect successful: " + JSON.stringify(response));
       resolve("ok");
     }).catch(function (reason) {
       console.log("Connect failed: " + JSON.stringify(reason));
