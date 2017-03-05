@@ -29,7 +29,6 @@ var K_EXTENSION = "extension";
 
 // Stores the longrunning ports per tab
 // Used to route all request from a tab to the same host instance
-//
 var ports = {};
 
 // false, if native components are verified to be usable
@@ -45,6 +44,10 @@ _testNativeComponent().then(function (result) {
   } else if (result == "ok") {
     // probe was OK, not needed later.
     missing = false;
+    // Check if the native version could be updated
+    fetch('https://web-eid.com/update.json').then(function(r) {return r.json();}).then(function(j) {
+      console.log("Current latest versions: " + JSON.stringify(j));
+    });
   }
 });
 
