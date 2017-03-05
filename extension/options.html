@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web eID options</title>
+  <style>
+    body: { padding: 10px; }
+  </style>
+</head>
+<body>
+
+<p> <label>
+    <input type="checkbox" id="legacy">
+    Enable legacy mode toggle
+ </label>
+</p>
+<p>
+ <label for="pkcs11">
+   Always try to use specified PKCS#11 module
+ </label>
+
+  <input type="text" id="pkcs11">
+  </p>
+  
+   <hr>
+   <button id="save">Save settings</button>
+   <script src="options.js"></script>
+</body>
+</html>

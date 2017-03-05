@@ -48,15 +48,6 @@ _testNativeComponent().then(function (result) {
   }
 });
 
-// Force kill of native process
-// Becasue Port.disconnect() does not work
-function _killPort(tab) {
-  if (tab in ports) {
-    console.log("KILL " + tab);
-    // Force killing with an empty message
-    ports[tab].postMessage({});
-  }
-}
 
 // Promise wrapper for sendNativeMessage
 function sendNativeMessage(host, msg) {
@@ -149,17 +140,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 128], tabId: sender.tab.id});
         chrome.browserAction.setTitle({title: "Disable legacy mode", tabId: sender.tab.id}); // FIXME: i18n
         return;
-      }
-    }
-    // Check if page is DONE and close the native component without doing anything else
-    if (request["type"] === "DONE") {
-      console.log("DONE " + sender.tab.id);
-      if (sender.tab.id in ports) {
-        // FIXME: would want to use Port.disconnect() here
-        _killPort(sender.tab.id);
+      } else if (request.done) {
+        console.log("DONE " + sender.tab.id);
+        if (sender.tab.id in ports)
+          ports[sender.tab.id].disconnect();
+          delete ports[sender.tab.id];
+        return;
       }
     } else {
-      request[K_TAB] = sender.tab.id;
+      // Normal message, to be passed to native
+      request[K_TAB] = sender.tab.id; // FIXME: keep track of actual requests via nonces and do not send tab to native
       if (missing) {
         // Extension was installed before native components
         // So test again.
@@ -236,22 +226,30 @@ function _forward(message) {
 
 
 function browser_action(tab) {
-  console.log("Browser action clicked on page tab " + JSON.stringify(tab));
-  // Check the status of legacy mode in tab
-  chrome.browserAction.getBadgeText({tabId: tab.id}, function(label) {
-    console.log("Current label: " + label);
-    if (label == "VAN") { // FIXME: i18n
-      // enabled. Disable
-      chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
-      // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
-      chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
-      chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
-    } else {
-      // No lable. Enable
-      chrome.tabs.sendMessage(tab.id, {"internal": "true", "enable_legacy":"true"});
-      chrome.tabs.reload(tab.id);
-    }
-  })
+  console.log("Browser action clicked on page tab " + JSON.stringify(tab.id));
+  console.log("localStorage in browser action: " + JSON.stringify(localStorage));
+  if (localStorage["legacy"] === "true") {
+    // Check the status of legacy mode in tab
+    chrome.browserAction.getBadgeText({tabId: tab.id}, function(label) {
+      console.log("Current label: " + label);
+      if (label == "VAN") { // FIXME: i18n
+        // enabled. Disable
+        chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
+        // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
+        chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
+        chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
+      } else {
+        // No lable. Enable
+        chrome.tabs.sendMessage(tab.id, {"internal": "true", "enable_legacy":"true"});
+        chrome.tabs.reload(tab.id);
+      }
+    });
+  } else {
+      console.log("Legacy toggle disabled.");
+      chrome.runtime.openOptionsPage();
+      return;
+  }
+
 }
 
 
@@ -259,4 +257,4 @@ function browser_action(tab) {
 chrome.browserAction.onClicked.addListener(browser_action);
 
 // Register page action for Firefox
-typeof browser.browserAction.onClicked !== 'undefined' && browser.browserAction.onClicked.addListener(browser_action);
+typeof browser !== 'undefined' && browser.browserAction.onClicked.addListener(browser_action);

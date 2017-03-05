@@ -49,7 +49,7 @@ function message_from_page(event) {
         if (!inuse) {
             // close the native component if page unloads
             window.addEventListener("beforeunload", function(event) {
-                chrome.runtime.sendMessage({type: 'DONE'});
+                chrome.runtime.sendMessage({"internal": true, "done": true});
             }, false);
             inuse = true;
         }
