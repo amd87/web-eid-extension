@@ -35,8 +35,16 @@ var ports = {};
 
 // if set, native messaging has been detected.
 var native_version = null;
-
 var extension_version = chrome.runtime.getManifest().version;
+
+// Firefox does not run onInstalled for extensions
+// dropped into extensions folder. Thus do a dirty hack
+typeof browser !== 'undefined' && (function() {
+  if (localStorage["firefox_installed"] != "true") {
+    localStorage["updates"] = "true";
+    localStorage["firfox_installed"] = "true";
+  }
+});
 
 // Small helper to compare if b is newer than a
 function newerVersion(a, b) {
@@ -85,7 +93,7 @@ _testNativeComponent().then(function (result) {
 }).catch(function(r) {
   if (r == "missing") {
     // open landing page if no native components installed
-    chrome.tabs.create({ 'url': HELLO_URL + '?lang=' + chrome.i18n.getUILanguage()});
+    chrome.tabs.create({ 'url': HELLO_URL + '?lang=' + chrome.i18n.getUILanguage() + "&reason=missing"});
   }
 });
 
