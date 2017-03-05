@@ -18,13 +18,26 @@
 
 var inuse = false;
 
-// Forward the message from hwcrypto.js to background.js
-window.addEventListener("message", function(event) {
+// Check if legacy mode is enabled for this site
+if (localStorage["hwcrypto.legacy"] == "true") {
+    console.log("hwcrypto: legacy mode enabled, injecting scripts");
+    // Signal background page to enable the badge for this site
+    chrome.runtime.sendMessage({"internal": true, "legacy_enabled": "true"});
+    // Inject the legacy JS in page
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src = chrome.runtime.getURL("legacy.js");
+    (document.head || document.documentElement).appendChild(s);
+}
+
+
+function message_from_page(event) {
     // We only accept messages from ourselves (JS embedded in the page)
     if (event.source !== window)
         return;
 
-    // Background page adds extension with version.
+    // hwcrypto property needed to activate this extension
+    // Background page adds extension property with version.
     if (!event.data.extension && event.data.hwcrypto) {
         // add origin information and forward to background.js
         event.data["origin"] = location.origin;
@@ -41,10 +54,28 @@ window.addEventListener("message", function(event) {
             inuse = true;
         }
     }
-}, false);
+}
 
-// post messages from extension (background.js) to page
-// TODO: remove
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    window.postMessage(request, "*");
-});
+function message_from_backend(request, sender, sendResponse) {
+    if (request.internal) {
+        // Process extension-internal message
+        if (request.enable_legacy) {
+            console.log("hwcrypto: enabling legacy mode");
+            localStorage["hwcrypto.legacy"] = "true";
+        } else if (request.disable_legacy) {
+            console.log("hwcrypto: disabling legacy mode");
+            localStorage.removeItem("hwcrypto.legacy");
+        }
+    } else {
+        // Message is intended to page
+        window.postMessage(request, "*");
+    }
+}
+
+// Register message handlers
+
+// Handle messages from page, towards background
+window.addEventListener("message", message_from_page , false);
+
+// Handle messages from extension background
+chrome.runtime.onMessage.addListener(message_from_backend);

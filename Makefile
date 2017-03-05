@@ -1,4 +1,4 @@
-all: default
+all: extensions
 .DEFAULT:
 	grunt $@
 

@@ -16,7 +16,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-var NO_NATIVE_URL = "https://hwcrypto.org/missing.html";
 var HELLO_URL = "https://web-eid.com/";
 var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-extension/wiki/DeveloperTips";
 
@@ -30,6 +29,7 @@ var K_EXTENSION = "extension";
 
 // Stores the longrunning ports per tab
 // Used to route all request from a tab to the same host instance
+//
 var ports = {};
 
 // false, if native components are verified to be usable
@@ -41,7 +41,7 @@ console.log("Background page activated on " + new Date());
 _testNativeComponent().then(function (result) {
   if (result == "missing") {
     // open landing page if no native components installed
-    chrome.tabs.create({ 'url': NO_NATIVE_URL + '?lang=' + chrome.i18n.getUILanguage()});
+    chrome.tabs.create({ 'url': HELLO_URL + '?lang=' + chrome.i18n.getUILanguage()});
   } else if (result == "ok") {
     // probe was OK, not needed later.
     missing = false;
@@ -61,7 +61,7 @@ function _killPort(tab) {
 // Promise wrapper for sendNativeMessage
 function sendNativeMessage(host, msg) {
   if (typeof browser !==  'undefined') {
-    // This is FF
+    // This is FF and returns a promise
     return browser.runtime.sendNativeMessage(host, msg);
   } else {
     // This is Chrome/Opera
@@ -140,6 +140,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   console.log("MSG R: " + JSON.stringify(request));
   if (sender.tab) {
+    // Handle internal messages
+    if (request.internal) {
+      console.log("Processing internal message");
+      if (request.legacy_enabled) {
+        // Set the browser action badge to signal legacy mode
+        chrome.browserAction.setBadgeText({text: "VAN", tabId: sender.tab.id}); // FIXME: i18n
+        chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 128], tabId: sender.tab.id});
+        chrome.browserAction.setTitle({title: "Disable legacy mode", tabId: sender.tab.id}); // FIXME: i18n
+        return;
+      }
+    }
     // Check if page is DONE and close the native component without doing anything else
     if (request["type"] === "DONE") {
       console.log("DONE " + sender.tab.id);
@@ -165,6 +176,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         _forward(request);
       }
     }
+  } else {
+    console.log("ERROR: Not tab for message " + JSON.stringify(request));
   }
 });
 
@@ -220,3 +233,30 @@ function _forward(message) {
     ports[tabid].postMessage(message);
   }
 }
+
+
+function browser_action(tab) {
+  console.log("Browser action clicked on page tab " + JSON.stringify(tab));
+  // Check the status of legacy mode in tab
+  chrome.browserAction.getBadgeText({tabId: tab.id}, function(label) {
+    console.log("Current label: " + label);
+    if (label == "VAN") { // FIXME: i18n
+      // enabled. Disable
+      chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
+      // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
+      chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
+      chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
+    } else {
+      // No lable. Enable
+      chrome.tabs.sendMessage(tab.id, {"internal": "true", "enable_legacy":"true"});
+      chrome.tabs.reload(tab.id);
+    }
+  })
+}
+
+
+// Register page action for Chrome/Chromium/Opera
+chrome.browserAction.onClicked.addListener(browser_action);
+
+// Register page action for Firefox
+typeof browser.browserAction.onClicked !== 'undefined' && browser.browserAction.onClicked.addListener(browser_action);
