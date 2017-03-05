@@ -8,3 +8,8 @@ clean:
 
 install:
 	npm install
+
+
+publish:
+	grunt default
+	grunt sign

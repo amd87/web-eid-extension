@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+console.log("Background page activated on " + new Date());
+
 var HELLO_URL = "https://web-eid.com/";
 var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-extension/wiki/DeveloperTips";
 
@@ -31,23 +33,59 @@ var K_EXTENSION = "extension";
 // Used to route all request from a tab to the same host instance
 var ports = {};
 
-// false, if native components are verified to be usable
-var missing = true;
+// if set, native messaging has been detected.
+var native_version = null;
 
-console.log("Background page activated on " + new Date());
+var extension_version = chrome.runtime.getManifest().version;
 
-// Test for presence of native components.
+// Small helper to compare if b is newer than a
+function newerVersion(a, b) {
+  var current = a.split('.');
+  var other = b.split('.');
+  for (i = 0; i < Math.min(current.length, other.length); i++) {
+    o = parseInt(other[i]);
+    c = parseInt(current[i]);
+    if (c == o)
+      continue;
+    return o > c;
+  }
+  if (other.length > current.length)
+    return true;
+  return false;
+}
+
+
+function check_for_updates() {
+   if (localStorage["updates"] == "true") {
+     // Check if the native version could be updated
+     fetch('https://web-eid.com/update.json').then(function(r) {return r.json();}).then(function(j) {
+       console.log("Latest versions: " + JSON.stringify(j));
+       console.log("Current versions: extension=" + extension_version + " native=" + native_version);
+       // Forward to updating URL if needed
+       if ((j.extension && newerVersion(extension_version, j.extension))
+           || (j.native && newerVersion(native_version, j.native))) {
+         console.log("Update available!");
+         // Direct to update url
+         var url = HELLO_URL + '?update=true&native=' + native_version + '&extension=' + extension_version;
+         chrome.tabs.create({ 'url': url});
+       }
+     });
+   } else {
+     console.log("Update checking disabled. Please enable to be sure to have the latest software!");
+   }
+}
+
+// Test for presence of native components on extension
+// startup. And check for updates, if configured to
 _testNativeComponent().then(function (result) {
-  if (result == "missing") {
+   // probe was OK, not needed later.
+   native_version = result;
+   // Check for updates
+   check_for_updates();
+}).catch(function(r) {
+  if (r == "missing") {
     // open landing page if no native components installed
     chrome.tabs.create({ 'url': HELLO_URL + '?lang=' + chrome.i18n.getUILanguage()});
-  } else if (result == "ok") {
-    // probe was OK, not needed later.
-    missing = false;
-    // Check if the native version could be updated
-    fetch('https://web-eid.com/update.json').then(function(r) {return r.json();}).then(function(j) {
-      console.log("Current latest versions: " + JSON.stringify(j));
-    });
   }
 });
 
@@ -73,29 +111,30 @@ function sendNativeMessage(host, msg) {
   }
 }
 
-// Check if native implementation is OK resolves with "ok", "missing" or "forbidden" (Chrome and Opera only)
+// Check if native implementation is OK resolves with "version" or rejects with "forbidden" (Chrome and Opera only), "missing" or "failing"
 function _testNativeComponent() {
   return new Promise(function (resolve, reject) {
     // FF has only host and message and returns a Promise
     sendNativeMessage(NATIVE_HOST, {}).then(function (response) {
       console.log("Connect successful: " + JSON.stringify(response));
-      resolve("ok");
+      if (response.version) {
+        resolve(response.version);
+      } else {
+        reject("failing");
+      }
     }).catch(function (reason) {
       console.log("Connect failed: " + JSON.stringify(reason));
-      // Try to be smart and do some string matching on Chrome
+      // Try to be smart and do some string matching on Chrome/Chromium/Opera
       if (reason) {
         const permissions = "Access to the specified native messaging host is forbidden.";
-        const missing = "Specified native messaging host not found.";
         if (reason.message === permissions) {
-          resolve("forbidden");
-        } else if (reason.message === missing) {
-          resolve("missing");
+          reject("forbidden");
         } else {
-          resolve("missing");
+          reject("missing");
         }
       } else {
         // Firefox does not give additional information (only on console) why sending failed.
-        resolve("missing");
+        reject("missing");
       }
     });
   });
@@ -105,19 +144,28 @@ function _testNativeComponent() {
 // Firefox adds this event v52
 typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.addListener(function (details) {
   console.log("onInstalled: " + JSON.stringify(details));
+  if (details.reason == "install") {
+     // Set default options
+     localStorage["legacy"] = "true";
+     localStorage["updates"] = "true";
+  }
   if (details.reason === "install" || details.reason === "update") {
     _testNativeComponent().then(function (result) {
-      var url = null;
       if (details.reason === "install") {
-        // If firefox
+        // Scenatio: native was installed, extension installed
+        // after being forwarded to installer page
         if (typeof browser !== 'undefined') {
            url = HELLO_URL + "?installer=firefox-exension";
+           chrome.tabs.create({ 'url': url });
+           return;
         }
       }
+      // Scenario: extension is auto-updated.
+      // Check that native components are the latest as well
+      check_for_updates();
+    }).catch(function(r) {
       if (result === "forbidden") {
         url = DEVELOPER_URL + "?reason=" + details.reason;
-      }
-      if (url) {
         chrome.tabs.create({ 'url': url });
       }
     });
@@ -152,17 +200,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
     } else {
       // Normal message, to be passed to native
-      request[K_TAB] = sender.tab.id; // FIXME: keep track of actual requests via nonces and do not send tab to native
-      if (missing) {
+      request[K_TAB] = sender.tab.id; // FIXME: keep track of actual requests via ID-s and do not send tab to native
+      if (!native_version) {
         // Extension was installed before native components
         // So test again.
         _testNativeComponent().then(function (result) {
-          if (result === "ok") {
-            missing = false;
-            _forward(request);
-          } else {
-            return _fail_with(request, "no_implementation");
-          }
+          native_version = result;
+          _forward(request);
+        }).catch(function(r) {
+           return _fail_with(request, "no_implementation");
         });
       } else {
         // Forward to native.
