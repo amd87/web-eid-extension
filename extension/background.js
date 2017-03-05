@@ -38,11 +38,11 @@ var native_version = null;
 var extension_version = chrome.runtime.getManifest().version;
 
 // Firefox does not run onInstalled for extensions
-// dropped into extensions folder. Thus do a dirty hack
+// dropped into extensions folder. Thus do a small hack
 typeof browser !== 'undefined' && (function() {
   if (localStorage["firefox_installed"] != "true") {
     localStorage["updates"] = "true";
-    localStorage["firfox_installed"] = "true";
+    localStorage["firefox_installed"] = "true";
   }
 });
 
