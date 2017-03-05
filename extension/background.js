@@ -39,12 +39,14 @@ var extension_version = chrome.runtime.getManifest().version;
 
 // Firefox does not run onInstalled for extensions
 // dropped into extensions folder. Thus do a small hack
-typeof browser !== 'undefined' && (function() {
+function firefox_extension_fixup() {
   if (localStorage["firefox_installed"] != "true") {
     localStorage["updates"] = "true";
     localStorage["firefox_installed"] = "true";
   }
-});
+}
+typeof browser !== 'undefined' && firefox_extension_fixup();
+
 
 // Small helper to compare if b is newer than a
 function newerVersion(a, b) {
