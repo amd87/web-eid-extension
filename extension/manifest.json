@@ -28,7 +28,7 @@
         "chrome_style": true
     },
     "permissions": [
-        "https://web-eid.com/",
+        "https://updates.web-eid.com/",
         "nativeMessaging"
     ],
     "web_accessible_resources": [

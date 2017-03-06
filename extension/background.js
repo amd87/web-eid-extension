@@ -20,6 +20,7 @@ console.log("Background page activated on " + new Date());
 
 var HELLO_URL = "https://web-eid.com/";
 var DEVELOPER_URL = "https://github.com/hwcrypto/hwcrypto-extension/wiki/DeveloperTips";
+var UPDATES_URL = "https://updates.web-eid.com/latest.json";
 
 var NATIVE_HOST = "org.hwcrypto.native";
 
@@ -66,7 +67,7 @@ function newerVersion(a, b) {
 function check_for_updates() {
    if (localStorage["updates"] == "true") {
      // Check if the native version could be updated
-     fetch('https://web-eid.com/update.json').then(function(r) {return r.json();}).then(function(j) {
+     fetch(UPDATES_URL).then(function(r) {return r.json();}).then(function(j) {
        console.log("Latest versions: " + JSON.stringify(j));
        console.log("Current versions: extension=" + extension_version + " native=" + native_version);
        // Forward to updating URL if needed
