@@ -18,7 +18,7 @@
         "scripts": ["background.js"]
     },
     "browser_action": {
-        "default_title": "Enable legacy mode",
+        "default_title": "Web eID options",
         "default_icon": {
             "48": "icon48.png"
         }
