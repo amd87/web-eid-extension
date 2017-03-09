@@ -168,7 +168,9 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
      // Set default options
      localStorage["legacy"] = "true";
      localStorage["updates"] = "true";
+     localStorage["firefox_installed"] = "true";
   }
+
   if (details.reason === "install" || details.reason === "update") {
     _testNativeComponent().then(function (result) {
       if (details.reason === "install") {
