@@ -29,3 +29,6 @@ document.getElementById('showadvanced').addEventListener('click', function(event
 document.getElementById('checknow').addEventListener('click', function(event) {
    chrome.extension.getBackgroundPage().check_for_updates(true);
 });
+document.getElementById('save').addEventListener('click', function(event) {
+   window.close();
+});
