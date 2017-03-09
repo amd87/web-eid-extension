@@ -66,7 +66,7 @@ function newerVersion(a, b) {
 }
 
 
-function check_for_updates() {
+function check_for_updates(force = false) {
    if (localStorage["updates"] == "true") {
      // Check if the native version could be updated
      fetch(UPDATES_URL).then(function(r) {return r.json();}).then(function(j) {
@@ -76,9 +76,18 @@ function check_for_updates() {
        if ((j.extension && newerVersion(extension_version, j.extension))
            || (j.native && newerVersion(native_version, j.native))) {
          console.log("Update available!");
-         // Direct to update url
-         var url = HELLO_URL + '?update=true&native=' + native_version + '&extension=' + extension_version;
-         chrome.tabs.create({ 'url': url});
+         // 1) Only to intrusive update notification once every X hours.
+         var now = new Date();
+         if (force || !localStorage["last_update_notification"] || parseInt(localStorage["last_update_notification"]) < now.getTime()-(3*60*60*1000)) {
+           // Mark notificatino time
+           localStorage["last_update_notification"] = now.getTime();
+           // Direct to update url
+           var url = HELLO_URL + '?update=true&native=' + native_version + '&extension=' + extension_version;
+           chrome.tabs.create({ 'url': url});
+         } else {
+            var hours = Math.round((now.getTime() - parseInt(localStorage["last_update_notification"]))/(60*60*1000));
+            console.log("But not notifying, because last notification was " + hours + " hours ago");
+         }
        }
      });
    } else {
@@ -152,7 +161,7 @@ function _testNativeComponent() {
 }
 
 // When extension is installed, check for native component or direct to helping page
-// Firefox adds this event v52
+// Firefox adds this event v52 and also calls with a reason "browser_updated"
 typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.addListener(function (details) {
   console.log("onInstalled: " + JSON.stringify(details));
   if (details.reason == "install") {
