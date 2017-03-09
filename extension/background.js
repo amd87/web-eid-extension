@@ -65,6 +65,8 @@ function newerVersion(a, b) {
   return false;
 }
 
+// FIXME: when native components are updated, the version
+// is not changed and the update gets incorrectly triggered again
 
 function check_for_updates(force = false) {
    if (force || localStorage["updates"] == "true") {

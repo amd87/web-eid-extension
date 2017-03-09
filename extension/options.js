@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-   chrome.extension.getBackgroundPage().console.log("The current store is " + JSON.stringify(localStorage));
+   chrome.extension.getBackgroundPage().console.log("The current options are: " + JSON.stringify(localStorage));
    document.getElementById('legacy').checked = localStorage["legacy"] === "true";
    document.getElementById('updates').checked = localStorage["updates"] === "true";
 });
@@ -17,8 +17,6 @@ document.getElementById('legacy').addEventListener('change', function(event) {fl
 document.getElementById('updates').addEventListener('change', function(event) {flip("updates", event);});
 document.getElementById('showadvanced').addEventListener('click', function(event) {
    var d = document.getElementById('advanced');
-
-   chrome.extension.getBackgroundPage().console.log(event);
    if (d.style.display == "none") {
       d.style.display = "block";
       event.target.innerText = "Hide advanced options"; // FIXME: i18n
