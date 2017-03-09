@@ -17,7 +17,15 @@ document.getElementById('legacy').addEventListener('change', function(event) {fl
 document.getElementById('updates').addEventListener('change', function(event) {flip("updates", event);});
 document.getElementById('showadvanced').addEventListener('click', function(event) {
    var d = document.getElementById('advanced');
-   d.style.display = (d.style.display == "none" ? "block" : "none");
+
+   chrome.extension.getBackgroundPage().console.log(event);
+   if (d.style.display == "none") {
+      d.style.display = "block";
+      event.target.innerText = "Hide advanced options"; // FIXME: i18n
+   } else {
+      d.style.display = "none";
+      event.target.innerText = "Show advanced options"; // FIXME: i18n
+   }
 });
 
 document.getElementById('checknow').addEventListener('click', function(event) {
