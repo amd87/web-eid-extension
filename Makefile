@@ -10,6 +10,6 @@ install:
 	npm install
 
 
-publish:
+release:
 	grunt default
 	grunt sign
