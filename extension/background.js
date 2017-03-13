@@ -27,12 +27,13 @@ var NATIVE_HOST = "org.hwcrypto.native";
 var K_ORIGIN = "origin";
 var K_NONCE = "nonce";
 var K_RESULT = "result";
-var K_TAB = "tab";
 var K_EXTENSION = "extension";
 
 // Stores the longrunning ports per tab
 // Used to route all request from a tab to the same host instance
 var ports = {};
+// Tracks messages to tabs by id field
+var id2tab = {};
 
 // if set, native messaging has been detected.
 var native_version = null;
@@ -67,7 +68,6 @@ function newerVersion(a, b) {
 
 // FIXME: when native components are updated, the version
 // is not changed and the update gets incorrectly triggered again
-
 function check_for_updates(force = false) {
    if (force || localStorage["updates"] == "true") {
      // Check if the native version could be updated
@@ -168,7 +168,7 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
   console.log("onInstalled: " + JSON.stringify(details));
   if (details.reason == "install") {
      // Set default options
-     localStorage["legacy"] = "true";
+     // TODO: consider: localStorage["legacy"] = "false";
      localStorage["updates"] = "true";
      localStorage["firefox_installed"] = "true";
   }
@@ -224,7 +224,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
     } else {
       // Normal message, to be passed to native
-      request[K_TAB] = sender.tab.id; // FIXME: keep track of actual requests via ID-s and do not send tab to native
+      id2tab[request.nonce] = sender.tab.id;
+      // Check that we have more than the message id and origin
+      if (Object.keys(request).length < 3) {
+        // Empty message is used for "PING". Reply with extension version
+        return _fail_with(request, "ok");
+      }
       if (!native_version) {
         // Extension was installed before native components
         // So test again.
@@ -245,10 +250,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 // Send the message back to the originating tab
-function _reply(tab, msg) {
-  msg[K_EXTENSION] = chrome.runtime.getManifest().version;
+// and delete id2tab mapping
+function _reply(msg) {
+  msg[K_EXTENSION] = extension_version;
   console.log("MSG S: " + JSON.stringify(msg));
-  chrome.tabs.sendMessage(tab, msg);
+  chrome.tabs.sendMessage(id2tab[msg.nonce], msg);
+  delete id2tab[msg.nonce];
 }
 
 // Fail an incoming message if the underlying implementation is not
@@ -257,12 +264,12 @@ function _fail_with(msg, result) {
   var resp = {};
   resp[K_NONCE] = msg[K_NONCE];
   resp[K_RESULT] = result;
-  _reply(msg[K_TAB], resp);
+  _reply(resp);
 }
 
 // Forward a message to the native component
 function _forward(message) {
-  var tabid = message[K_TAB];
+  var tabid = message[id2tab[message.nonce]];
   console.log("SEND " + tabid + ": " + JSON.stringify(message));
   // Open a port if necessary
   if (!ports[tabid]) {
@@ -278,7 +285,7 @@ function _forward(message) {
     port.onMessage.addListener(function (response) {
       if (response) {
         console.log("RECV " + tabid + ": " + JSON.stringify(response));
-        _reply(tabid, response);
+        _reply(response);
       } else {
         console.log("ERROR " + tabid + ": " + JSON.stringify(chrome.runtime.lastError));
         _fail_with(message, "technical_error");

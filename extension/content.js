@@ -39,6 +39,9 @@ function message_from_page(event) {
     // hwcrypto property needed to activate this extension
     // Background page adds extension property with version.
     if (!event.data.extension && event.data.hwcrypto) {
+        // The hwcrypto flag is only present to filter messages here in
+        // content script. Remove it from message
+        delete event.data["hwcrypto"];
         // add origin information and forward to background.js
         event.data["origin"] = location.origin;
         // FF returns a promise, filled with response (or null)
