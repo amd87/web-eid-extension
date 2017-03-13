@@ -22,8 +22,8 @@ window.addEventListener("message", function(event) {
         console.log("Page received: ");
         console.log(event.data);
         // Get the promise
-        if(event.data.nonce) {
-            var p = _eid_promises[event.data.nonce];
+        if(event.data.id) {
+            var p = _eid_promises[event.data.id];
             // resolve
             if(event.data.result === "ok") {
                 if(event.data.signature !== undefined) {
@@ -40,9 +40,9 @@ window.addEventListener("message", function(event) {
                 // reject
                 p.reject(new Error(event.data.result));
             }
-            delete _eid_promises[event.data.nonce];
+            delete _eid_promises[event.data.id];
         } else {
-            console.log("No nonce in event msg");
+            console.log("No id in event msg");
         }
     }
 }, false);
@@ -61,13 +61,13 @@ function TokenSigning() {
     function messagePromise(msg) {
         return new Promise(function(resolve, reject) {
             // amend with necessary metadata
-            msg["nonce"] = nonce();
+            msg["id"] = nonce();
             msg["hwcrypto"] = true;
 
             // send message
             window.postMessage(msg, "*");
             // and store promise callbacks
-            _eid_promises[msg.nonce] = {
+            _eid_promises[msg.id] = {
                 resolve: resolve,
                 reject: reject
             };

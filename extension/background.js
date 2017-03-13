@@ -25,7 +25,6 @@ var UPDATES_URL = "https://updates.web-eid.com/latest.json";
 var NATIVE_HOST = "org.hwcrypto.native";
 
 var K_ORIGIN = "origin";
-var K_NONCE = "nonce";
 var K_RESULT = "result";
 var K_EXTENSION = "extension";
 
@@ -224,7 +223,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
     } else {
       // Normal message, to be passed to native
-      id2tab[request.nonce] = sender.tab.id;
+      id2tab[request.id] = sender.tab.id;
       // Check that we have more than the message id and origin
       if (Object.keys(request).length < 3) {
         // Empty message is used for "PING". Reply with extension version
@@ -254,22 +253,22 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 function _reply(msg) {
   msg[K_EXTENSION] = extension_version;
   console.log("MSG S: " + JSON.stringify(msg));
-  chrome.tabs.sendMessage(id2tab[msg.nonce], msg);
-  delete id2tab[msg.nonce];
+  chrome.tabs.sendMessage(id2tab[msg.id], msg);
+  delete id2tab[msg.id];
 }
 
 // Fail an incoming message if the underlying implementation is not
 // present
 function _fail_with(msg, result) {
   var resp = {};
-  resp[K_NONCE] = msg[K_NONCE];
+  resp["id"] = msg["id"];
   resp[K_RESULT] = result;
   _reply(resp);
 }
 
 // Forward a message to the native component
 function _forward(message) {
-  var tabid = message[id2tab[message.nonce]];
+  var tabid = message[id2tab[message.id]];
   console.log("SEND " + tabid + ": " + JSON.stringify(message));
   // Open a port if necessary
   if (!ports[tabid]) {
