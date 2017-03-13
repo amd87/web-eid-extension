@@ -178,7 +178,7 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
         // Scenatio: native was installed, extension installed
         // after being forwarded to installer page
         if (typeof browser !== 'undefined') {
-           url = HELLO_URL + "?installer=firefox-exension";
+           url = HELLO_URL + "?installer=firefox-extension";
            chrome.tabs.create({ 'url': url });
            return;
         }
