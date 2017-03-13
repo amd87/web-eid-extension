@@ -22,7 +22,7 @@ module.exports = function(grunt) {
             cmd: 'zip -r ../../dist/firefox-store-' + manifest.version + '.zip .'
           },
           test: {
-            cmd: './node_modules/.bin/addons-linter build/chrome && ./node_modules/.bin/addons-linter build/firefoxstore && ./node_modules/.bin/addons-linter --self-hosted build/firefox'
+            cmd: './node_modules/.bin/addons-linter build/firefoxstore && ./node_modules/.bin/addons-linter --self-hosted build/firefox'
           },
           sign: {
             cmd: "./node_modules/.bin/web-ext sign -a dist -s build/firefox --api-key " + amo.issuer + " --api-secret " + amo.secret
@@ -52,13 +52,19 @@ module.exports = function(grunt) {
          if ("applications" in f)
            delete f["applications"];
        });
-       // modify firefox store manifest, removing update_url
+       // modify firefox store manifest
        replace("build/firefoxstore/manifest.json", function(f) {
+         // removing update_url
          delete f.applications.gecko["update_url"];
+         // and permanent flag
+         delete f.background.permanent;
        });
-       // modify firefox manifest, changing the store ID to "readable ID"
+       // modify firefox manifest
        replace("build/firefox/manifest.json", function(f) {
+         // changing the store ID to "readable ID"
          f.applications.gecko["id"] = "native@hwcrypto.org";
+         // and removing permanent flag
+         delete f.background.permanent;
        });
        // make chrome development folder
        grunt.file.copy("build/chrome", "build/chrome-dev");
