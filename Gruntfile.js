@@ -81,6 +81,6 @@ module.exports = function(grunt) {
     
     grunt.registerTask('build', ['extensions']);
     grunt.registerTask('clean', ['exec:isclean', 'exec:cleanup']);
-    grunt.registerTask('dist', ['exec:isclean', 'exec:distdir', 'exec:chrome', 'exec:firefox', 'exec:firefoxstore']);
+    grunt.registerTask('dist', ['build', 'exec:isclean', 'exec:distdir', 'exec:chrome', 'exec:firefox', 'exec:firefoxstore']);
     grunt.registerTask('default', ['clean', 'build', 'exec:test', 'dist']);
 };
