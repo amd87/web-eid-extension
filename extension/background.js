@@ -24,10 +24,6 @@ var UPDATES_URL = "https://updates.web-eid.com/latest.json";
 
 var NATIVE_HOST = "org.hwcrypto.native";
 
-var K_ORIGIN = "origin";
-var K_RESULT = "result";
-var K_EXTENSION = "extension";
-
 // Stores the longrunning ports per tab
 // Used to route all request from a tab to the same host instance
 var ports = {};
@@ -36,7 +32,20 @@ var id2tab = {};
 
 // if set, native messaging has been detected.
 var native_version = null;
+// current extension version
 var extension_version = chrome.runtime.getManifest().version;
+
+// Running in Firefox TODO: same in Edge
+var isFirefox = typeof browser !== 'undefined';
+// Running in Chrome
+var isChrome =  !isFirefox;
+// True if some kind of developer mode has been detected
+var isDeveloperMode = false;
+
+// Check if extension is loaded from file
+if (isChrome && !('update_url' in chrome.runtime.getManifest())) {
+  isDeveloperMode = true;
+}
 
 // Firefox does not run onInstalled for extensions
 // dropped into extensions folder. Thus do a small hack
@@ -46,7 +55,7 @@ function firefox_extension_fixup() {
     localStorage["firefox_installed"] = "true";
   }
 }
-typeof browser !== 'undefined' && firefox_extension_fixup();
+isFirefox && firefox_extension_fixup();
 
 
 // Small helper to compare if b is newer than a
@@ -65,11 +74,21 @@ function newerVersion(a, b) {
   return false;
 }
 
+// Convert a dictionary to a query string
+function d2q(d) {
+  let r = [];
+  for (let v in d) {
+     r.push(encodeURIComponent(v) + '=' + encodeURIComponent(d[v]));
+  }
+  return r.join('&');
+}
+
 // FIXME: when native components are updated, the version
 // is not changed and the update gets incorrectly triggered again
 function check_for_updates(force = false) {
    if (force || localStorage["updates"] == "true") {
      // Check if the native version could be updated
+     // TODO: use beta update stream if configured. Use sync storage
      fetch(UPDATES_URL).then(function(r) {return r.json();}).then(function(j) {
        console.log("Latest versions: " + JSON.stringify(j));
        console.log("Current versions: extension=" + extension_version + " native=" + native_version);
@@ -83,7 +102,11 @@ function check_for_updates(force = false) {
            // Mark notification time
            localStorage["last_update_notification"] = now.getTime();
            // Direct to update url
-           var url = HELLO_URL + '?update=true&native=' + native_version + '&extension=' + extension_version;
+           var d = d2q({"update": true, "native": native_version, "extension": extension_version});
+           if (isDeveloperMode) {
+             d.developer = true;
+           }
+           var url = HELLO_URL + '?' + d2q(d);
            chrome.tabs.create({ 'url': url});
          } else {
             var hours = Math.round((now.getTime() - parseInt(localStorage["last_update_notification"]))/(60*60*1000));
@@ -106,14 +129,15 @@ _testNativeComponent().then(function (result) {
 }).catch(function(r) {
   if (r == "missing") {
     // open landing page if no native components installed
-    chrome.tabs.create({ 'url': HELLO_URL + '?lang=' + chrome.i18n.getUILanguage() + "&reason=missing"});
+    var d = d2q({"lang": chrome.i18n.getUILanguage(), "reason": "missing"});
+    chrome.tabs.create({ 'url': HELLO_URL + '?' + d});
   }
 });
 
 
 // Promise wrapper for sendNativeMessage
 function sendNativeMessage(host, msg) {
-  if (typeof browser !==  'undefined') {
+  if (isFirefox) {
     // This is FF and returns a promise
     return browser.runtime.sendNativeMessage(host, msg);
   } else {
@@ -175,10 +199,10 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
   if (details.reason === "install" || details.reason === "update") {
     _testNativeComponent().then(function (result) {
       if (details.reason === "install") {
-        // Scenatio: native was installed, extension installed
+        // Scenario: native was installed, extension installed
         // after being forwarded to installer page
-        if (typeof browser !== 'undefined') {
-           url = HELLO_URL + "?installer=firefox-extension";
+        if (isFirefox) {
+           var url = HELLO_URL + '?' + d2q({"installer": "firefox-extension", "version": extension_version});
            chrome.tabs.create({ 'url': url });
            return;
         }
@@ -188,7 +212,7 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
       check_for_updates();
     }).catch(function(r) {
       if (result === "forbidden") {
-        url = DEVELOPER_URL + "?reason=" + details.reason;
+        var url = DEVELOPER_URL + "?" + d2q({"reason": details.reason});
         chrome.tabs.create({ 'url': url });
       }
     });
@@ -251,7 +275,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 // Send the message back to the originating tab
 // and delete id2tab mapping
 function _reply(msg) {
-  msg[K_EXTENSION] = extension_version;
+  msg["extension"] = extension_version;
   console.log("MSG S: " + JSON.stringify(msg));
   chrome.tabs.sendMessage(id2tab[msg.id], msg);
   delete id2tab[msg.id];
@@ -262,7 +286,7 @@ function _reply(msg) {
 function _fail_with(msg, result) {
   var resp = {};
   resp["id"] = msg["id"];
-  resp[K_RESULT] = result;
+  resp["result"] = result;
   _reply(resp);
 }
 
@@ -332,4 +356,4 @@ function browser_action(tab) {
 chrome.browserAction.onClicked.addListener(browser_action);
 
 // Register page action for Firefox
-typeof browser !== 'undefined' && browser.browserAction.onClicked.addListener(browser_action);
+isFirefox && browser.browserAction.onClicked.addListener(browser_action);
