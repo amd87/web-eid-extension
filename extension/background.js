@@ -305,30 +305,26 @@ function _forward(message) {
 
 
 function browser_action(tab) {
-  console.log("Browser action clicked on page tab " + JSON.stringify(tab.id));
-  console.log("localStorage in browser action: " + JSON.stringify(localStorage));
-  if (localStorage["legacy"] === "true") {
-    // Check the status of legacy mode in tab
-    chrome.browserAction.getBadgeText({tabId: tab.id}, function(label) {
-      console.log("Current label: " + label);
-      if (label == "VAN") { // FIXME: i18n
-        // enabled. Disable
-        chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
-        // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
-        chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
-        chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
-      } else {
-        // No lable. Enable
+  // Check the status of legacy mode in tab
+  chrome.browserAction.getBadgeText({tabId: tab.id}, function(label) {
+    console.log("Current label in tab " + tab.id + ": " + label);
+    if (label == "VAN") { // FIXME: i18n
+      // enabled. disabling is always possible
+      chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
+      // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
+      chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
+      chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
+    } else {
+      // No lable. Enable, if enabling allowed by config
+      if (localStorage["legacy"] === "true") { // FIXME: consider storage.managed as well
         chrome.tabs.sendMessage(tab.id, {"internal": "true", "enable_legacy":"true"});
         chrome.tabs.reload(tab.id);
+      } else {
+        console.log("Legacy toggle disabled.");
+        chrome.runtime.openOptionsPage();
       }
-    });
-  } else {
-      console.log("Legacy toggle disabled.");
-      chrome.runtime.openOptionsPage();
-      return;
-  }
-
+    }
+  });
 }
 
 
