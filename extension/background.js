@@ -268,7 +268,7 @@ function _fail_with(msg, result) {
 
 // Forward a message to the native component
 function _forward(message) {
-  var tabid = message[id2tab[message.id]];
+  var tabid = id2tab[message.id];
   console.log("SEND " + tabid + ": " + JSON.stringify(message));
   // Open a port if necessary
   if (!ports[tabid]) {
