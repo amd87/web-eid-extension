@@ -12,10 +12,16 @@ function base2hex(base) {
    return hex;
 }
 
+// Convert hex to base64
+function hex2base(str) {
+  return btoa(String.fromCharCode.apply(null,
+    str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
+  );
+}
+
 // Turn the incoming message from extension
 // into pending Promise resolving
 window.addEventListener("message", function(event) {
-
     if(event.source !== window)
         return;
     if(event.data.extension) {
@@ -79,7 +85,7 @@ function TokenSigning() {
         return messagePromise(msg);
     };
     this.sign = function(cert, hash, options) {
-        var msg = {type: "SIGN", cert: cert.hex, hash: hash.hex, hashtype: hash.type, lang: options.lang};
+        var msg = {type: "SIGN", cert: hex2base(cert.hex), hash: hex2base(hash.hex), hashtype: hash.type, lang: options.lang};
         console.log("sign()");
         return messagePromise(msg);
     };
