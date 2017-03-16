@@ -102,7 +102,7 @@ function check_for_updates(force = false) {
            // Mark notification time
            localStorage["last_update_notification"] = now.getTime();
            // Direct to update url
-           var d = d2q({"update": true, "native": native_version, "extension": extension_version});
+           var d = {"update": true, "native": native_version, "extension": extension_version};
            if (isDeveloperMode) {
              d.developer = true;
            }
