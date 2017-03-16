@@ -19,7 +19,7 @@
 var inuse = false;
 
 // Check if legacy mode is enabled for this site
-if (localStorage["hwcrypto.legacy"] == "true") {
+if (localStorage["hwcrypto.legacy"] == "true" || document.getElementById("hwcrypto_legacy")) {
     console.log("hwcrypto: legacy mode enabled, injecting scripts");
     // Signal background page to enable the badge for this site
     chrome.runtime.sendMessage({"internal": true, "legacy_enabled": "true"});
