@@ -15,7 +15,7 @@ release:
 	@echo "About to release $(VERSION)"
 	# Check that code is up to date
 	git checkout master
-	git pull --rebase
+	git pull --rebase --tags
 	# Check that version tag does not exist
 	! git tag -l | grep $(VERSION)
 	# tag release
