@@ -14,6 +14,7 @@ function flip(name, event) {
 }
 
 document.getElementById('legacy').addEventListener('change', function(event) {flip("legacy", event);});
+document.getElementById('legacy_toggle').addEventListener('change', function(event) {flip("legacy_toggle", event);});
 document.getElementById('updates').addEventListener('change', function(event) {flip("updates", event);});
 document.getElementById('showadvanced').addEventListener('click', function(event) {
    var d = document.getElementById('advanced');

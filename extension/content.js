@@ -18,18 +18,40 @@
 
 var inuse = false;
 
-// Check if legacy mode is enabled for this site
-if (localStorage["hwcrypto.legacy"] == "true" || document.getElementById("hwcrypto_legacy")) {
-    console.log("hwcrypto: legacy mode enabled, injecting scripts");
-    // Signal background page to enable the badge for this site
-    chrome.runtime.sendMessage({"internal": true, "legacy_enabled": "true"});
-    // Inject the legacy JS in page
-    var s = document.createElement('script');
-    s.type = 'text/javascript';
-    s.src = chrome.runtime.getURL("legacy.js");
-    (document.head || document.documentElement).appendChild(s);
+var legacy = false;
+
+// Reasons to enable legacy mode for a page
+// 1. legacy flag is set for the origin
+if (localStorage["hwcrypto.legacy"] === "true")
+   legacy = true;
+
+// 2. hwcrypto JS is probably included in the page
+var scripts = document.getElementsByTagName("script");
+for (s in scripts) {
+    if (scripts[s].src && scripts[s].src.indexOf("hwcrypto") != -1 && localStorage["hwcrypto.legacy"] !== "false") {
+        legacy = true;
+    }
 }
 
+// Query extension, if legacy mode is enabled
+chrome.runtime.sendMessage({"internal": "is_legacy_enabled"}, function(response) {
+    if (response.is_legacy_enabled === true) {
+        // Yep, legacy mode IS enabled
+        // Include legacy javascript, if page needs it
+        if (legacy) {
+            console.log("hwcrypto: legacy mode enabled, injecting scripts");
+            // Signal background page to enable the badge for this tab
+            chrome.runtime.sendMessage({"internal": "legacy_enabled"});
+            // Inject the legacy JS in page
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.src = chrome.runtime.getURL("legacy.js");
+            (document.head || document.documentElement).appendChild(s);
+        }
+    } else {
+        console.log("Legacy mode is not enabled");
+    }
+});
 
 function message_from_page(event) {
     // We only accept messages from ourselves (JS embedded in the page)
@@ -46,13 +68,13 @@ function message_from_page(event) {
         event.data["origin"] = location.origin;
         // FF returns a promise, filled with response (or null)
         // TODO: use the possibility to process the response
-        chrome.runtime.sendMessage(event.data, function(response) {});
+        chrome.runtime.sendMessage(event.data);
 
         // Only add unload handler if extension has been used
         if (!inuse) {
             // close the native component if page unloads
             window.addEventListener("beforeunload", function(event) {
-                chrome.runtime.sendMessage({"internal": true, "done": true});
+                chrome.runtime.sendMessage({"internal": "done"});
             }, false);
             inuse = true;
         }
@@ -62,12 +84,12 @@ function message_from_page(event) {
 function message_from_backend(request, sender, sendResponse) {
     if (request.internal) {
         // Process extension-internal message
-        if (request.enable_legacy) {
+        if (request.internal === "enable_legacy") {
             console.log("hwcrypto: enabling legacy mode");
             localStorage["hwcrypto.legacy"] = "true";
-        } else if (request.disable_legacy) {
+        } else if (request.internal === "disable_legacy") {
             console.log("hwcrypto: disabling legacy mode");
-            localStorage.removeItem("hwcrypto.legacy");
+            localStorage["hwcrypto.legacy"] = "false";
         }
     } else {
         // Message is intended to page

@@ -191,7 +191,7 @@ typeof chrome.runtime.onInstalled !== 'undefined' && chrome.runtime.onInstalled.
   console.log("onInstalled: " + JSON.stringify(details));
   if (details.reason == "install") {
      // Set default options
-     // TODO: consider: localStorage["legacy"] = "false";
+     localStorage["legacy"] = "true";
      localStorage["updates"] = "true";
      localStorage["firefox_installed"] = "true";
   }
@@ -232,18 +232,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Handle internal messages
     if (request.internal) {
       console.log("Processing internal message");
-      if (request.legacy_enabled) {
+      if (request.internal === "legacy_enabled") {
         // Set the browser action badge to signal legacy mode
         chrome.browserAction.setBadgeText({text: "VAN", tabId: sender.tab.id}); // FIXME: i18n
         chrome.browserAction.setBadgeBackgroundColor({color: [255, 0, 0, 128], tabId: sender.tab.id});
         chrome.browserAction.setTitle({title: "Disable legacy mode", tabId: sender.tab.id}); // FIXME: i18n
         return;
-      } else if (request.done) {
+      } else if (request.internal === "done") {
         console.log("DONE " + sender.tab.id);
         if (sender.tab.id in ports)
           ports[sender.tab.id].disconnect();
           delete ports[sender.tab.id];
         return;
+      } else if (request.internal === "is_legacy_enabled") {
+        sendResponse({"is_legacy_enabled": localStorage["legacy"] === "true"});
       }
     } else {
       // Normal message, to be passed to native
@@ -334,17 +336,18 @@ function browser_action(tab) {
     console.log("Current label in tab " + tab.id + ": " + label);
     if (label == "VAN") { // FIXME: i18n
       // enabled. disabling is always possible
-      chrome.tabs.sendMessage(tab.id, {"internal": "true", "disable_legacy":"true"});
+      chrome.tabs.sendMessage(tab.id, {"internal": "disable_legacy"});
       // Next load will not have the legacy flag enabled. Remove badge, but do not reload page
       chrome.browserAction.setBadgeText({text: "", tabId: tab.id});
+      // TODO: only if toggle is enabled.
       chrome.browserAction.setTitle({title: "Enable legacy mode", tabId: tab.id}); // FIXME: i18n
     } else {
       // No lable. Enable, if enabling allowed by config
-      if (localStorage["legacy"] === "true") { // FIXME: consider storage.managed as well
-        chrome.tabs.sendMessage(tab.id, {"internal": "true", "enable_legacy":"true"});
+      if (localStorage["legacy"] === "true" && localStorage["legacy_toggle"] === "true") { // FIXME: consider storage.managed as well
+        chrome.tabs.sendMessage(tab.id, {"internal": "enable_legacy"});
         chrome.tabs.reload(tab.id);
       } else {
-        console.log("Legacy toggle disabled.");
+        console.log("Legacy or legacy toggle disabled.");
         chrome.runtime.openOptionsPage();
       }
     }
