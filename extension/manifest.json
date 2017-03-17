@@ -2,6 +2,7 @@
     "name": "__MSG_extName__",
     "version": "17.3.14",
     "author": "Web eID team",
+    "homepage_url": "https://web-eid.com/",
     "manifest_version": 2,
     "description": "__MSG_extDescription__",
     "default_locale": "en",
