@@ -22,4 +22,6 @@ release:
 	git tag $(VERSION) -m "Release $(VERSION)"
 	grunt default
 	grunt sign
+	# Be sure to push everyting back
+	git push --tags origin master
 	
