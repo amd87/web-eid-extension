@@ -253,7 +253,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       // Check that we have more than the message id and origin
       if (Object.keys(request).length < 3) {
         // Empty message is used for "PING". Reply with extension version
-        return _fail_with(request, "ok");
+        return _reply(request);
       }
       if (!native_version) {
         // Extension was installed before native components
@@ -285,17 +285,16 @@ function _reply(msg) {
 
 // Fail an incoming message if the underlying implementation is not
 // present
-function _fail_with(msg, result) {
+function _fail_with(msg, error) {
   var resp = {};
   resp["id"] = msg["id"];
-  resp["result"] = result;
+  resp["error"] = error;
   _reply(resp);
 }
 
 // Forward a message to the native component
 function _forward(message) {
   var tabid = id2tab[message.id];
-  console.log("SEND " + tabid + ": " + JSON.stringify(message));
   // Open a port if necessary
   if (!ports[tabid]) {
     // For some reason there does not seem to be a way to detect missing components from longrunning ports
@@ -322,9 +321,11 @@ function _forward(message) {
       // TODO: reject all pending promises for tab, if any
     });
     ports[tabid] = port;
+    console.log("SEND " + tabid + ": " + JSON.stringify(message));
     ports[tabid].postMessage(message);
   } else {
     // Port already open
+    console.log("SEND " + tabid + ": " + JSON.stringify(message));
     ports[tabid].postMessage(message);
   }
 }
