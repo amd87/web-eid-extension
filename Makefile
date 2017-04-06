@@ -19,7 +19,7 @@ release:
 	# Check that version tag does not exist
 	! git tag -l | grep $(VERSION)
 	# tag release
-	git tag $(VERSION) -m "Release $(VERSION)"
+	git tag -s $(VERSION) -m "Release $(VERSION)"
 	grunt default
 	grunt sign
 	# Be sure to push everyting back
