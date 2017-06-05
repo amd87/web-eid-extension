@@ -1,12 +1,14 @@
 {
     "name": "__MSG_extName__",
-    "version": "17.3.17",
+    "version": "17.5.3",
     "author": "Web eID team",
     "homepage_url": "https://web-eid.com",
     "manifest_version": 2,
     "description": "__MSG_extDescription__",
     "default_locale": "en",
     "icons": {
+        "16": "icon16.png",
+        "32": "icon32.png",
         "48": "icon48.png",
         "128": "icon128.png"
     },
@@ -32,7 +34,10 @@
     },
     "permissions": [
         "https://updates.web-eid.com/",
-        "nativeMessaging"
+        "https://web-eid.com/",
+        "nativeMessaging",
+        "storage",
+        "activeTab"
     ],
     "web_accessible_resources": [
         "legacy.js"
