@@ -11,6 +11,7 @@
     "web-ext": "^1.9.1"
   },
   "scripts": {
+    "dist": "grunt default",
     "grunt": "grunt",
     "build": "grunt extensions",
     "indent": "standard --fix extension/*.js --global chrome --global browser"
