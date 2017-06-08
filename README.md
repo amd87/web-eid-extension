@@ -11,7 +11,7 @@
 ### Why would you want the extension in addition to the app?
  - on-demand startup of the eID app uses less resources and saves battery time
  - available when your computer is not connected to the internet
- - makes websites use Web eID when signing online ([.ee legacy mode only](https://github.com/web-eid/web-eid-extension/wiki/Legacy-Mode))
+ - makes websites use Web eID when signing online ([.ee legacy mode](https://github.com/web-eid/web-eid-extension/wiki/Legacy-Mode) only)
  - notifies you when updates are available for Web eID
 
 ## How to install?
