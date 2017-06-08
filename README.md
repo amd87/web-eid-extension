@@ -1,6 +1,6 @@
 # Browser companion for the [Web eID app](https://web-eid.com/app/) · [![Build Status](https://travis-ci.org/web-eid/web-eid-extension.svg?branch=master)](https://travis-ci.org/web-eid/web-eid-extension)
 
-## Available for
+### Available for
 [![chrome.google.com](https://github.com/alrra/browser-logos/blob/master/src/chrome/chrome_64x64.png)](https://chrome.google.com/webstore/category/extensions)
 [![chrome.google.com](https://github.com/alrra/browser-logos/blob/master/src/chromium/chromium_64x64.png)](https://chrome.google.com/webstore/category/extensions)
 [![addons.mozilla.org](https://github.com/alrra/browser-logos/blob/master/src/firefox/firefox_64x64.png)](https://addons.mozilla.org/en-US/firefox/)
@@ -19,7 +19,7 @@
 Head to [web-eid.com/app](https://web-eid.com/app/) and click the "install extension" button.
 
 ## License
-- LGPL2.1+
+- LGPL-2.1+
 - Please refer to the [wiki](https://github.com/web-eid/web-eid-extension/wiki) for developer information.
 
 This is _the_ reference implementation of a **modern desktop browser extension** that utilizes native messaging (available in [Chrome](https://developer.chrome.com/extensions/nativeMessaging), [Firefox](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging), [Opera](https://dev.opera.com/extensions/message-passing/#native-messaging) and soon [Edge](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/native-messaging)) to talk to on-host native components for interacting with eID hardware (e.g. smart cards or USB tokens).
