@@ -18,6 +18,22 @@
     return window.btoa(String.fromCharCode.apply(null, str.replace(/\r|\n/g, '').replace(/([\da-fA-F]{2}) ?/g, '0x$1 ').replace(/ +$/, '').split(' ')))
   }
 
+  // Convert base64 to Uint8Array
+  function base2ab (str) {
+    var r = window.atob(str)
+    var l = r.length
+    var result = new Uint8Array(new ArrayBuffer(l))
+    for (var i = 0; i < l; i++) {
+      result[i] = r.charCodeAt(i)
+    }
+    return result
+  }
+
+  // Convert Uint8Array to base64
+  function ab2base (ab) {
+    return window.btoa(String.fromCharCode.apply(null, new Uint8Array(ab)))
+  }
+
   // Turn the incoming message from extension
   // content script into pending Promise resolving
   window.addEventListener('message', function (event) {
@@ -68,14 +84,16 @@
       var msg = {certificate: {}}
       console.log('getCertificate()')
       return messagePromise(msg).then(function (r) {
-        return {hex: base2hex(r.certificate)}
+        return {hex: base2hex(r.certificate), encoded: base2ab(r.signature)}
       })
     }
     ts.sign = function (cert, hash, options) {
       console.log('sign()', cert, hash, options)
-      var msg = {sign: {certificate: hex2base(cert.hex), hash: hex2base(hash.hex), hashtype: hash.type, lang: options.lang}}
+      var crt = cert.encoded ? ab2base(cert.encoded) : hex2base(cert.hex)
+      var hsh = hash.encoded ? ab2base(hash.encoded) : hex2base(hash.hex)
+      var msg = {sign: {certificate: crt, hash: hsh, hashtype: hash.type, lang: options.lang}}
       return messagePromise(msg).then(function (r) {
-        return {hex: base2hex(r.signature)}
+        return {hex: base2hex(r.signature), encoded: base2ab(r.signature)}
       })
     }
     ts.getVersion = function () {
