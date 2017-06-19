@@ -12,7 +12,8 @@
  - on-demand startup of the eID app uses less resources and saves battery time
  - available when your computer is not connected to the internet
  - makes websites use Web eID when signing online ([.ee legacy mode](https://github.com/web-eid/web-eid-extension/wiki/Legacy-Mode) only)
- - notifies you when updates are available for Web eID
+ - notifies you when updates are available for Web eID app
+   - extensions have agressive automagic update mechanism, maintained by browser vendors.
 
 ## How to install?
 
