@@ -20,7 +20,7 @@
 Head to [web-eid.com/app](https://web-eid.com/app/) and click the "install extension" button.
 
 ## License
-- LGPL-2.1+
+- LGPLv3
 - Please refer to the [wiki](https://github.com/web-eid/web-eid-extension/wiki) for developer information.
 
 This is _the_ reference implementation of a **modern desktop browser extension** that utilizes native messaging (available in [Chrome](https://developer.chrome.com/extensions/nativeMessaging), [Firefox](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging), [Opera](https://dev.opera.com/extensions/message-passing/#native-messaging) and soon [Edge](https://docs.microsoft.com/en-us/microsoft-edge/extensions/guides/native-messaging)) to talk to on-host native components for interacting with eID hardware (e.g. smart cards or USB tokens).
